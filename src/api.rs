@@ -1,7 +1,8 @@
 pub mod server {
-    use warp::{Filter};
+    use warp::{Filter,  http::{Response, StatusCode}};
     use super::routes::{get, post, put};
     use crate::db::{get_connection, with_db};
+    use std::collections::HashMap;
 
     pub async fn start() -> Result<(), mysql_async::Error> {
 
@@ -10,12 +11,22 @@ pub mod server {
 
         // root path
         let root_path = warp::path("api");
-        let routes = root_path
+
+        // stablish routes
+       let routes = root_path
             .and(warp::get())
             .and(warp::path("users"))
-            .and(warp::path::end())
+            .and(warp::query::<HashMap<String, String>>())
             .and(with_db(pool.clone()))
-            .and_then(get::get_users_handler);
+            .and_then(|query:HashMap<String, String>, pool| {
+                let query = match query.get("fromid") {
+                    Some(query) => query,
+                    None =>  panic!("couldn't get query fromid"),
+                };
+
+                get::get_users_handler(query.clone(), pool)
+            });
+            //.and(warp::path::end());
             // .or(
             //     root_path
             //         .and(warp::get())
@@ -30,22 +41,25 @@ pub mod server {
     }
 }
 
+
 mod routes {
 
         // get routes
         pub mod get {
             use warp::{Reply, Rejection};
+            use mysql_async::{Pool};
             use anyhow::{Result};
-            use mysql_async::{Pool, prelude::*};
             use crate::db;
 
                 
-            pub async fn get_users_handler(pool: Pool) -> Result<impl Reply, Rejection> {
-                let get_users= db::queries::get::get_all_users(pool).await;
-                let users = get_users.map_err(|err| {
-                    println!("Error fetching users from database: {:?}", err);
-                   // reject::custom(anyhow::Error::new(err));
-                });
+            pub async fn get_users_handler(query: String, pool: Pool) -> Result<impl Reply, Rejection> {
+      
+                let get_users= db::queries::get::get_all_users(query, pool).await;
+      
+                let users = match get_users {
+                    Ok(users) => users,
+                    Err(e) => panic!("couldn't get users: {}", e),
+                };
 
                 let reply = warp::reply::json(&users);
                 Ok(reply)
@@ -92,9 +106,4 @@ mod routes {
                 Ok(response)
             } 
         }
-}
-
-pub mod handlers {
-
-
 }
