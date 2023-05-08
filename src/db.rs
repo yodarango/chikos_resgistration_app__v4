@@ -18,11 +18,10 @@ pub fn with_db(pool: Pool) -> impl Filter<Extract = (Pool,), Error = Infallible>
 
 pub mod queries {
     pub mod get {
-
-        use mysql_async::{prelude::*, Pool, Error};
+        use mysql_async::{prelude::*, Pool, Error, QueryWithParams};
         use crate::models::Registrant;
 
-        pub async fn get_all_users(query: String, pool: Pool) -> Result<Vec<Registrant>, Error> {
+        pub async fn get_all_users(from_id: String, pool: Pool) -> Result<Vec<Registrant>, Error> {
         
                 let mut conn = match pool.get_conn().await {
                     Ok(conn) => conn,
@@ -30,7 +29,7 @@ pub mod queries {
                 };
                 
                 let users = "SELECT ID, signature FROM users WHERE ID > ?"
-                .with(((query,)))
+                .with((from_id,))
                 .map(&mut conn, |(ID, signature)| Registrant { id: ID, name: signature })
                 .await?;
 
@@ -39,6 +38,32 @@ pub mod queries {
                 //pool.disconnect().await?;
 
                 Ok(users)
+        }
+
+        pub async fn get_user (id: String, pool: Pool) -> Result<Registrant, Error> {
+            let mut conn = pool.get_conn().await?; // ? is the same as match Ok(conn) => conn, Err(e) => return Err(e)
+
+            let user: Vec<Registrant>= "SELECT ID, signature FROM users WHERE ID = ?"
+            .with((id,))
+            .map(&mut conn, |(ID, signature)| Registrant { id: ID, name: signature }).await?;
+
+            let get_single_user = user.get(0).cloned();
+
+    
+                let single_user: Registrant = match get_single_user {
+                    Some(user) => user,
+                    None => Registrant {
+                        id: 0,
+                        name: "".to_string(),
+                    },
+                    };
+          
+            
+             println!("{:?}", user);
+             drop(conn);
+
+             Ok(single_user)
+
         }
     }
 }

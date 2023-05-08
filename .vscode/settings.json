@@ -1,3 +1,6 @@
 {
-  "rust-analyzer.linkedProjects": ["./Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["./Cargo.toml"],
+  "audioCues.lineHasInlineSuggestion": "off",
+  "rust-analyzer.inlayHints.closingBraceHints.minLines": 0
+  // "github.copilot.enable": false
 }
