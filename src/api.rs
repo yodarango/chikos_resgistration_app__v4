@@ -15,22 +15,19 @@ pub mod server {
         // stablish routes
        let routes = root_path
             .and(warp::get())
-            .and(warp::path!("user" / String))
+            .and(warp::path!("users" / String))
             .and(with_db(pool.clone()))
             .and_then(|id, pool| get::get_user(id, pool))
-            
+
             .or(root_path
                  .and(warp::get())
             .and(warp::path!("users"))
             .and(warp::query::<HashMap<String, String>>())
             .and(with_db(pool.clone()))
             .and_then(|query:HashMap<String, String>, pool| {
-                let query = match query.get("fromid") {
-                    Some(query) => query,
-                    None =>  panic!("couldn't get query fromid"),
-                };
+                let query=query.get("fromid").map_or_else(|| String::from("0"), |s| s.to_owned());
 
-                get::get_users_handler(query.clone(), pool)
+                get::get_users_handler(query, pool)
             })
             );
 

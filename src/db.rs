@@ -28,7 +28,7 @@ pub mod queries {
                     Err(e) => panic!("couldn't get connection: {}", e),
                 };
                 
-                let users = "SELECT ID, signature FROM users WHERE ID > ?"
+                let users = "SELECT ID, signature FROM users WHERE ID > ? LIMIT 20"
                 .with((from_id,))
                 .map(&mut conn, |(ID, signature)| Registrant { id: ID, name: signature })
                 .await?;
