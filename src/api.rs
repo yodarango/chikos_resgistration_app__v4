@@ -13,14 +13,14 @@ pub mod server {
         let root_path = warp::path("api");
 
         // stablish routes
-       let routes = root_path
+       let api_routes = root_path
             .and(warp::get())
             .and(warp::path!("users" / String))
             .and(with_db(pool.clone()))
-            .and_then(|id, pool| get::get_user(id, pool))
+            .and_then(get::get_user)
 
             .or(root_path
-                 .and(warp::get())
+            .and(warp::get())
             .and(warp::path!("users"))
             .and(warp::query::<HashMap<String, String>>())
             .and(with_db(pool.clone()))
@@ -29,7 +29,25 @@ pub mod server {
 
                 get::get_users_handler(query, pool)
             })
+            )
+            
+            .or(
+                root_path
+                .and(warp::post())
+                .and(warp::path("users"))
+                .and(warp::path("new"))
+                .and(warp::body::json())
+                .and(with_db(pool.clone()))
+                .and_then(post::create_registration)
             );
+
+        let public_routes = 
+         warp::path::end()
+        .and(warp::get())
+        .and(warp::fs::dir("src/public/"));
+
+
+        let routes = public_routes.or(api_routes);
 
         warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 
@@ -43,9 +61,9 @@ mod routes {
         // get routes
         pub mod get {
             use warp::{Reply, Rejection};
+            use crate::db::queries::get;
             use mysql_async::{Pool};
             use anyhow::{Result};
-            use crate::db::queries::get;
                 
                 // gets all users starting from the id passed in the query
             pub async fn get_users_handler(query: String, pool: Pool) -> Result<impl Reply, Rejection> {
@@ -77,12 +95,26 @@ mod routes {
 
         // post routes
         pub mod post {
+            use crate::models::Registrant;
+            use crate::db::queries::post;
             use warp::{Reply, Rejection};
+            use mysql_async::{Pool};
+            use anyhow::{Result};
+
 
             // register a new user
-            pub async fn register_user() -> Result<impl Reply, Rejection> {
-                let response = String::from("...registering user");
-                Ok(response)
+            pub async fn create_registration(registrant: Registrant, pool: Pool) -> Result<impl Reply, Rejection> {
+
+
+                let register_user = post::new_registration(registrant, pool).await;
+
+                let result = match register_user {
+                    Ok(result)=> result, 
+                    Err(e) => panic!("Error! Could not create a new registrant: {}", e),
+                };
+
+       
+                Ok(result)
 
             }
         }

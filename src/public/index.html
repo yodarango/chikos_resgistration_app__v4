@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form onsubmit="submitForm(event)">
+      <input name="first_name" type="text" id="fn" />
+      <input type="text" name="last_name" id="ln" />
+      <input type="number" name="age" id="age" />
+      <input type="number" name="gender" id="gen" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <script>
+      function submitForm(event) {
+        event.preventDefault(); // Prevent form submission
+
+        // Get form field values
+        const first_name = document.getElementById("fn").value;
+        const last_name = document.getElementById("ln").value;
+        const age = document.getElementById("age").value;
+        const gender = document.getElementById("gen").value;
+
+        // Create JSON body
+        const body = JSON.stringify({
+          first_name,
+          last_name,
+          age: parseInt(age),
+          gender: parseInt(gender),
+        });
+
+        // Send POST request using fetch
+        fetch("api/users/new", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Success:", data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
