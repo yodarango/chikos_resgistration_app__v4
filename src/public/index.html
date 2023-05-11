@@ -12,6 +12,9 @@
       <input type="text" name="last_name" id="ln" />
       <input type="number" name="age" id="age" />
       <input type="number" name="gender" id="gen" />
+      <input type="text" name="first_name" id="gfn" />
+      <input type="text" name="age" id="gln" />
+      <input type="number" name="phone_number" id="gphone" />
       <button type="submit">Submit</button>
     </form>
 
@@ -24,6 +27,9 @@
         const last_name = document.getElementById("ln").value;
         const age = document.getElementById("age").value;
         const gender = document.getElementById("gen").value;
+        const guardian_fn = document.getElementById("gfn").value;
+        const guardian_ln = document.getElementById("gln").value;
+        const phone_number = document.getElementById("gphone").value;
 
         // Create JSON body
         const body = JSON.stringify({
@@ -31,6 +37,11 @@
           last_name,
           age: parseInt(age),
           gender: parseInt(gender),
+          guardian: {
+            first_name: guardian_fn,
+            last_name: guardian_ln,
+            phone_number: parseInt(phone_number),
+          },
         });
 
         // Send POST request using fetch
