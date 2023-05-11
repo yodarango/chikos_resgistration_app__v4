@@ -8,3 +8,10 @@ pub struct Registrant {
     pub gender: u8,
     pub age: u8,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Response {
+    pub message: String,
+    pub status: u16,    
+    pub data: Option<Registrant>,
+}

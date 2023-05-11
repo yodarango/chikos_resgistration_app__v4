@@ -76,10 +76,12 @@ pub mod queries {
 
     pub mod post {
         use mysql_async::{prelude::*, Pool, Error};
-        use crate::models::Registrant;
+        use crate::models::{Response, Registrant};
+        use warp::{reply::json, Reply};
+       // use serde_json::json;
 
-            pub async fn new_registration(registrant: Registrant, pool: Pool) -> Result<String, Error> {
-                let Registrant {first_name, last_name, age, gender, ..} = registrant;
+            pub async fn new_registration(registrant: Registrant, pool: Pool) -> Result<impl Reply, Error> {
+                let Registrant {first_name, last_name, age, gender, ..} = &registrant;
                 let mut conn = pool.get_conn().await?;
 
 
@@ -94,13 +96,14 @@ pub mod queries {
                     "age" => age,
                 };
 
-                match conn.exec_drop(query, params).await? {
-                    () => println!("operation was successful"),
-                    _ => panic!("couldn't insert new user"),
+                let result: Response = match conn.exec_drop(query, params).await? {
+                    () => Response {message: "operation was successful".into(), status: 200, data: Some(registrant)},
+                    _ => Response {message: "Could not create user".into(), status: 200, data: Some(registrant)},
                 };
                 
-
-                Ok(String::from("everything good"))
+ 
+                    Ok(json::<_>(&result ))
+          
             }
 
         }
