@@ -35,6 +35,7 @@ pub mod queries {
                 .with((from_id,))
                 .map(&mut conn, |(id, first_name, last_name, gender, age, guardian_fn, guardian_ln, guardian_phone )| 
                     Registrant { 
+                        created_date: None,
                         first_name, 
                         last_name, 
                         gender, 
@@ -62,29 +63,19 @@ pub mod queries {
 
         pub async fn get_user (id: String, pool: Pool) -> Result<Registrant, Error> {
             let mut conn = pool.get_conn().await?; // ? is the same as match Ok(conn) => conn, Err(e) => return Err(e)
-
-            let query = if id == "0" {
-            "SELECT r.id, r.first_name, r.last_name, r.gender, r.age, g.first_name AS guardian_fn, g.last_name AS guardian_ln, g.phone_number AS guardian_phone
-            FROM registrant AS r
-            JOIN guardians AS g
-            ON r.id = g.registrant_id 
-            ORDER BY ID DESC"
-            } else {
-            "SELECT r.id, r.first_name, r.last_name, r.gender, r.age, g.first_name AS guardian_fn, g.last_name AS guardian_ln, g.phone_number AS guardian_phone
-            FROM registrant AS r
-            JOIN guardians AS g
-            ON r.id = g.registrant_id 
-            WHERE r.id = ?"
-            };
-
-            // println!("user_id: {:?}", user_id);
-            // println!("id: {:?}", id);
+             
+             let query = 
+              "SELECT r.id, r.first_name, r.last_name, r.gender, r.age, g.first_name AS guardian_fn, g.last_name AS guardian_ln, g.phone_number AS guardian_phone
+                FROM registrant AS r
+                JOIN guardians AS g
+                ON r.id = g.registrant_id 
+                WHERE r.id = ?".with((id,));
             
             //query
             let user: Vec<Registrant>= query
-            .with((id,))
             .map(&mut conn, |(id, first_name, last_name, gender, age, guardian_fn, guardian_ln, guardian_phone )| 
             Registrant { 
+                created_date: None,
                 first_name, 
                 last_name, 
                 gender, 
@@ -98,7 +89,7 @@ pub mod queries {
                             phone_number: guardian_phone
                         }
                     )
-                }
+                },
 
             })
             .await?;
@@ -112,9 +103,10 @@ pub mod queries {
                         id: Some(0),
                         first_name: "no user found with that id".into(),
                         last_name: "none".into(),
-                        age: 0,
-                        gender: 0,
+                        created_date: None,
                         guardian: None,
+                        gender: 0,
+                        age: 0,
                     },
                     };
           
@@ -123,59 +115,67 @@ pub mod queries {
              Ok(single_user)
 
         }
+
+        pub async fn get_last_user_id (pool: Pool) -> Result<u64, mysql_async::Error> {
+            let mut conn = pool.get_conn().await?;
+            let last_id: Vec<u64>  = 
+            "SELECT ID FROM registrant ORDER BY ID DESC LIMIT 1"
+            .with(())
+            .map(&mut conn, |id | id)
+            .await?;
+
+            let last_id = last_id.get(0).unwrap_or(&0);
+            Ok(*last_id)
+        }
     }
 
     pub mod post {
         use mysql_async::{prelude::*, Pool, Error};
         use crate::models::{Response, Registrant};
         use warp::{reply::json, Reply};
+        use super::get::get_last_user_id;
        // use serde_json::json;
 
             pub async fn new_registration(registrant: Registrant, pool: Pool) -> Result<impl Reply, Error> {
-                let Registrant {first_name, last_name, age, gender, guardian,..} = &registrant;
-                let mut conn = pool.get_conn().await?;
+                 let Registrant {first_name, last_name, age, gender, guardian,..} = &registrant;
+                 let mut conn = pool.get_conn().await?;
 
                 let guardian_fn: String = guardian.as_ref().map_or("".into(), |g| g.first_name.clone());
                 let guardian_ln: String = guardian.as_ref().map_or("".into(), |g| g.last_name.clone());
                 let guardian_phone: u64 = guardian.as_ref().map_or(0, |g| g.phone_number.clone());
 
-                // println!("guardian phone: {:?}", guardian_phone);
-                // println!("guardian first name: {:?}", guardian_fn);
-                // println!("guardian last name: {:?}", guardian_ln);
-                println!("{:?}", registrant);
-
                 let query = 
                 "INSERT INTO registrant (first_name, last_name, gender, age) 
                 VALUES (:first_name, :last_name, :gender, :age);";
-
-                // INSERT INTO guardians (registrant_id, first_name, last_name, phone_number)
-                // VALUES (:registrant_id, :guardian_fn, :guardian_ln, :guardian_phone);
-                //";
 
                 let params = params! {
                     "first_name" => first_name,
                     "last_name" => last_name,
                     "gender" => gender,
                     "age" => age,
-                    "registrant_id" => "1",
+                };
+
+                  let g_query = "INSERT INTO guardians (registrant_id, first_name, last_name, phone_number)
+                VALUES (:registrant_id, :guardian_fn, :guardian_ln, :guardian_phone);
+                ";
+
+                 conn.exec_drop(query, params).await?;
+
+                // get the last id after insertion
+                let last_id = get_last_user_id(pool).await?;
+
+                let g_params = params! {
+                    "registrant_id" => last_id,
                     "guardian_fn" => guardian_fn,
                     "guardian_ln" => guardian_ln,
                     "guardian_phone" => guardian_phone,
-
-
                 };
-
-                let result: Response = match conn.exec_drop(query, params).await? {
+                
+                let g_result: Response = match conn.exec_drop(g_query, g_params).await? {
                     () => Response {message: "operation was successful".into(), status: 200, data: Some(registrant)},
                 };
 
-                // conn.query(query, params).await? {
-                //     () => Response {message: "operation was successful".into(), status: 200, data: Some(registrant)},
-                // };
-                
-            
-                Ok(json::<_>(&result ))
-                // Ok(String::from("hello"))
+                Ok(json::<_>(&g_result ))
           
             }
 

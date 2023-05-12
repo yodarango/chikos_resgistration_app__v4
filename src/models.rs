@@ -2,6 +2,7 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Registrant {
+    pub  created_date: Option<String>,
     pub guardian: Option<Guardian>,
     pub first_name: String,
     pub last_name: String,
