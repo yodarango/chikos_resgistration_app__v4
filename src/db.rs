@@ -181,4 +181,42 @@ pub mod queries {
 
         }
     
+    pub mod put {
+        use mysql_async::{prelude::*, Pool, Error};
+        use warp::{reply::json, Reply};
+        use crate::models::{Response};
+
+        pub async fn check_in_user (user_id: u64, pool: Pool) -> Result<impl Reply, Error> {
+            let mut conn = pool.get_conn().await?;
+            let query = "UPDATE registrant SET checked_in = 1 WHERE id = :user_id";
+
+            let params = params! {
+                "user_id" => user_id,
+            };
+            
+            let result = match conn.exec_drop(query, params).await?{
+                () => Response {message: String::from("user checked in successfully"), status: 200, data: None},
+            };
+
+            Ok(json::<_>(&result))
+        }
+         
+         pub async fn check_out_user (user_id: u64, pool: Pool) -> Result<impl Reply, Error> {
+            let mut conn = pool.get_conn().await?;
+            let query = "UPDATE registrant SET checked_in = 0 WHERE id = :user_id";
+
+            let params = params! {
+                "user_id" => user_id,
+            };
+            
+            let result = match conn.exec_drop(query, params).await?{
+                () => Response {message: String::from("user checked out successfully"), status: 200, data: None},
+            };
+
+            Ok(json::<_>(&result))
+        }
+         
+
+         }
+
 }

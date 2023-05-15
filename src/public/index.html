@@ -18,8 +18,10 @@
       <button type="submit">Submit</button>
     </form>
 
+    <button onClick="checkInUser()">check-in</button>
+    <button onClick="checkOutUser()">check-out</button>
     <script>
-      function submitForm(event) {
+      const submitForm = async (event) => {
         event.preventDefault(); // Prevent form submission
 
         // Get form field values
@@ -45,26 +47,42 @@
         });
 
         // Send POST request using fetch
-        fetch("api/users/new", {
+        const req = await fetch("api/users/new", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: body,
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log("Success:", data);
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-          });
-      }
+        });
+        const res = await req.json();
+        console.log(res);
+      };
+    </script>
+
+    <script>
+      const checkInUser = async () => {
+        const req = await fetch("api/users/checkin/10", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
+
+      const checkOutUser = async () => {
+        const req = await fetch("api/users/checkout/10", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
     </script>
   </body>
 </html>

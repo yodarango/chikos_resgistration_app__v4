@@ -21,7 +21,7 @@ pub mod server {
 
             .or(root_path
             .and(warp::get())
-            .and(warp::path!("users"))
+            .and(warp::path("users"))
             .and(warp::query::<HashMap<String, String>>())
             .and(with_db(pool.clone()))
             .and_then(|query:HashMap<String, String>, pool| {
@@ -30,7 +30,7 @@ pub mod server {
                 get::get_users_handler(query, pool)
             })
             )
-            
+            // create new user
             .or(
                 root_path
                 .and(warp::post())
@@ -39,7 +39,27 @@ pub mod server {
                 .and(warp::body::json())
                 .and(with_db(pool.clone()))
                 .and_then(post::create_registration)
-            );
+            )
+            // check in a user 
+            .or(
+                root_path
+                .and(warp::put())
+                .and(warp::path("users"))
+                .and(warp::path!("checkin" / u64))
+                .and(with_db(pool.clone()))
+                .and_then(put::check_in_user)
+            )
+            // Check out a user
+             .or(
+                root_path
+                .and(warp::put())
+                .and(warp::path("users"))
+                .and(warp::path!("checkout" / u64))
+                .and(with_db(pool.clone()))
+                .and_then(put::check_out_user)
+            )
+            ;
+
 
         let public_routes = 
          warp::path::end()
@@ -122,20 +142,28 @@ mod routes {
         // edit routes  
         pub mod put{
               use warp::{Reply, Rejection};
+              use mysql_async::{Pool};
+              use crate::db::queries::put;
+              use anyhow::{Result};
+
             // check in the registered user
-            pub async fn check_in_user(user: u64) -> Result<impl Reply, Rejection> {
-                let user = user.to_string();
-                let response = String::from("this user is: ") + &user;
+            pub async fn check_in_user(user_id: u64, pool: Pool) -> Result<impl Reply, Rejection> {
+                let response = match put::check_in_user(user_id, pool).await {
+                    Ok(response) => response,
+                    Err(e)=> panic!("Error! Could not check in user: {}", e),
+                };
 
                 Ok(response)
             }
 
-            // check out the registered user
-            pub async fn check_out_user(user: u64) -> Result<impl Reply, Rejection> {
-                let user = user.to_string();
-                let response = String::from("this user is: ") + &user;
+           // check in the registered user
+            pub async fn check_out_user(user_id: u64, pool: Pool) -> Result<impl Reply, Rejection> {
+                let response = match put::check_out_user(user_id, pool).await {
+                    Ok(response) => response,
+                    Err(e)=> panic!("Error! Could not check out user: {}", e),
+                };
 
                 Ok(response)
-            } 
+            }
         }
 }
