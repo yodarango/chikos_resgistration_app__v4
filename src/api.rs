@@ -1,6 +1,6 @@
 pub mod server {
     use crate::db::{get_connection, with_db};
-    use super::routes::{get, post, put};
+    use super::routes::{get, post, put, delete};
     use std::collections::HashMap;
     use warp::{Filter};
 
@@ -57,6 +57,15 @@ pub mod server {
                 .and(warp::path!("checkout" / u64))
                 .and(with_db(pool.clone()))
                 .and_then(put::check_out_user)
+            )
+            // delete a user 
+            .or(
+                root_path
+                .and(warp::delete())
+                .and(warp::path("users"))
+                .and(warp::path!("delete" / u64))
+                .and(with_db(pool.clone()))
+                .and_then(delete::delete_user)
             )
             ;
 
@@ -164,6 +173,23 @@ mod routes {
                 };
 
                 Ok(response)
+            }
+        }
+
+        // delete queries 
+        pub mod delete {
+            use mysql_async::{Pool};
+            use anyhow::Result;  
+            use warp::{Reply, Rejection};
+            use crate::db::queries::delete;
+
+            pub async fn delete_user(user_id: u64, pool: Pool) -> Result<impl Reply, Rejection> {
+                let response = match delete::delete_user(user_id, pool).await {
+                    Ok(response) => response,
+                    Err(e) => panic!("Error! Could not delete user: {}", e),
+                };
+                Ok(response)
+
             }
         }
 }

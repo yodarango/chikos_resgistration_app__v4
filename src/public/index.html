@@ -18,9 +18,13 @@
       <button type="submit">Submit</button>
     </form>
 
+    <input type="number" name="user_id" id="user_id" />
     <button onClick="checkInUser()">check-in</button>
     <button onClick="checkOutUser()">check-out</button>
+    <button onClick="checkOutUser()">delete</button>
     <script>
+      const user_id = document.getElementById("user_id");
+
       const submitForm = async (event) => {
         event.preventDefault(); // Prevent form submission
 
@@ -61,7 +65,8 @@
 
     <script>
       const checkInUser = async () => {
-        const req = await fetch("api/users/checkin/10", {
+        console.log(user_id);
+        const req = await fetch(`api/users/checkin/${user_id.value}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -73,8 +78,22 @@
       };
 
       const checkOutUser = async () => {
-        const req = await fetch("api/users/checkout/10", {
+        const req = await fetch(`api/users/checkout/${user_id.value}`, {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
+    </script>
+
+    <script>
+      const deleteUser = async () => {
+        const req = await fetch(`api/users/checkin/${user_id.value}`, {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },

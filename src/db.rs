@@ -1,4 +1,4 @@
-use mysql_async::{Pool, Conn, Error, Opts};
+use mysql_async::{Pool, Error, Opts};
 use std::convert::Infallible;
 use warp::{Filter};
 
@@ -179,7 +179,7 @@ pub mod queries {
           
             }
 
-        }
+    }
     
     pub mod put {
         use mysql_async::{prelude::*, Pool, Error};
@@ -217,6 +217,28 @@ pub mod queries {
         }
          
 
-         }
+    }
+
+    pub mod delete {
+        use mysql_async::{Pool, Error, prelude::*};
+        use warp::{Reply, reply::json};
+
+        use crate::models::Response;
+
+        pub async fn delete_user (user_id: u64, pool: Pool) -> Result<impl Reply, Error> {
+            let mut conn = pool.get_conn().await?;
+            let query = "DELETE FROM registrant WHERE id = :user_id";
+
+            let params = params! {
+                "user_id" => user_id,
+            };
+
+           let result = match conn.exec_drop(query, params).await?{
+                () => Response  {message: String::from("user deleted successfully"), status: 200, data: None},
+            };
+
+            Ok(json(&result))
+        }
+    }
 
 }
