@@ -1,6 +1,6 @@
 pub mod server {
     use crate::db::{get_connection, with_db};
-    use super::routes::{get, post, put, delete};
+    use super::routes::{get, post, put, delete, files};
     use std::collections::HashMap;
     use warp::{Filter};
 
@@ -66,6 +66,14 @@ pub mod server {
                 .and(warp::path!("delete" / u64))
                 .and(with_db(pool.clone()))
                 .and_then(delete::delete_user)
+            )
+            // file download
+            .or(
+                root_path
+                .and(warp::post())
+                .and(warp::path("upload"))
+                .and(warp::multipart::form().max_length(5_000_000))
+                .and_then(files::upload)
             )
             ;
 
@@ -191,5 +199,73 @@ mod routes {
                 Ok(response)
 
             }
+        }
+
+
+        pub mod files {
+            use bytes::BufMut;
+            use futures::TryStreamExt;
+            use uuid::Uuid;
+            use warp::{
+                multipart::{FormData, Part},
+                Rejection, Reply,
+            };
+            
+           pub async fn upload(form: FormData) -> Result<impl Reply, Rejection> {
+    let parts: Vec<Part> = form.try_collect().await.map_err(|e| {
+        eprintln!("form error: {}", e);
+        warp::reject::reject()
+    })?;
+
+    for p in parts {
+        if p.name() == "file" {
+            let content_type = p.content_type();
+            let file_ending;
+            match content_type {
+                Some(file_type) => match file_type {
+                    "application/pdf" => {
+                        file_ending = "pdf";
+                    }
+                    "image/png" => {
+                        file_ending = "png";
+                    }
+                    v => {
+                        eprintln!("invalid file type found: {}", v);
+                        return Err(warp::reject::reject());
+                    }
+                },
+                None => {
+                    eprintln!("file type could not be determined");
+                    return Err(warp::reject::reject());
+                }
+            }
+
+            let value = p
+                .stream()
+                .try_fold(Vec::new(), |mut vec, data| {
+                    vec.put(data);
+                    async move { Ok(vec) }
+                })
+                .await
+                .map_err(|e| {
+                    eprintln!("reading file error: {}", e);
+                    warp::reject::reject()
+                })?;
+
+            let file_name = format!("./files/{}.{}", Uuid::new_v4().to_string(), file_ending);
+            tokio::fs::write(&file_name, value).await.map_err(|e| {
+                eprint!("error writing file: {}", e);
+                warp::reject::reject()
+            })?;
+            println!("created file: {}", file_name);
+        }
+    }
+
+    Ok("success")
+}
+
+            // pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
+
+            // }
         }
 }
