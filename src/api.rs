@@ -67,24 +67,24 @@ pub mod server {
                 .and(with_db(pool.clone()))
                 .and_then(delete::delete_user)
             )
-            // file download
+            // file upload
             .or(
                 root_path
                 .and(warp::post())
-                .and(warp::path("upload"))
+                .and(warp::path("upload-photo"))
                 .and(warp::multipart::form().max_length(5_000_000))
                 .and_then(files::upload)
-            )
-            ;
+            );
 
 
         let public_routes = 
          warp::path::end()
         .and(warp::get())
-        .and(warp::fs::dir("src/public/"));
+        .and(warp::fs::dir("src/public/"))
+        ;
 
 
-        let routes = public_routes.or(api_routes);
+        let routes = public_routes.or(api_routes).recover(files::handle_rejection);
 
         warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 
@@ -203,63 +203,155 @@ mod routes {
 
 
         pub mod files {
+            use std::{convert::Infallible, vec, io::Write};
             use bytes::BufMut;
-            use futures::TryStreamExt;
+            use futures::{TryStreamExt, TryFutureExt};
             use uuid::Uuid;
             use warp::{
                 multipart::{FormData, Part},
-                Rejection, Reply,
+                Rejection, Reply, Buf, hyper::StatusCode
             };
+            use anyhow::Result;
+            use std::fs;
             
-           pub async fn upload(form: FormData) -> Result<impl Reply, Rejection> {
-    let parts: Vec<Part> = form.try_collect().await.map_err(|e| {
-        eprintln!("form error: {}", e);
-        warp::reject::reject()
-    })?;
+            pub async fn upload(form: FormData) -> Result<impl Reply, Rejection> {
 
-    for p in parts {
-        if p.name() == "file" {
-            let content_type = p.content_type();
-            let file_ending;
-            match content_type {
-                Some(file_type) => match file_type {
-                    "application/pdf" => {
-                        file_ending = "pdf";
-                    }
-                    "image/png" => {
-                        file_ending = "png";
-                    }
-                    v => {
-                        eprintln!("invalid file type found: {}", v);
-                        return Err(warp::reject::reject());
-                    }
-                },
-                None => {
-                    eprintln!("file type could not be determined");
-                    return Err(warp::reject::reject());
-                }
-            }
-
-            let value = p
-                .stream()
-                .try_fold(Vec::new(), |mut vec, data| {
-                    vec.put(data);
-                    async move { Ok(vec) }
+                 let parts: Result<Vec<(String, Vec<u8>)>, warp::Rejection> = form
+                .and_then(|part| {
+                    let name = part.name().to_string();
+                    
+                    let value = 
+                    part
+                    .stream()
+                    .try_fold(Vec::new(), |mut vec, data| {
+                        vec.put_slice(data.chunk());
+                        async move { Ok(vec) }
+                    });
+                    value
+                    .map_ok(move |vec| (name, vec))
                 })
+                .try_collect()
                 .await
                 .map_err(|e| {
-                    eprintln!("reading file error: {}", e);
+                    panic!("multipart error: {:?}", e);
+                 });
+
+                let vec_u8: Option<Vec<u8>> = match parts {
+                    Ok(parts) => parts.first().map(|(_, vec)| vec.clone()),
+                    Err(_) => None,
+                };
+
+               let the_vec =  match vec_u8 {
+                    Some(vec) => vec,
+                    None => {
+                     vec![0]    
+                    }
+                };
+
+
+                print!( "writting.....");
+
+                let file_name = "new_one.png";
+                //  let mut file = fs::OpenOptions::new()
+                // .read(true)
+                // .write(true)
+                // .create(true);
+               // .append(true);
+                //.open(file_name).unwrap();
+
+
+                // //👇 works 
+
+                // // create the file
+                // let mut file = match fs::File::create(&file_name) {
+                //     Ok(file) => file,
+                //     Err(err) => {
+                //         panic!("Failed to create the file: {}", err);
+                //     }
+                // };
+
+                // // Write the image bytes to the file
+                // if let Err(err) = file.write_all(&the_vec) {
+                //     eprintln!("Failed to write the image file: {}", err);
+                // } else {
+                //     println!("Image file successfully written to disk.");
+                // }
+
+                // //👆 works 
+
+
+                tokio::fs::write(&file_name, the_vec).await.map_err(|e| {
+                    eprint!("error writing file: {}", e);
                     warp::reject::reject()
                 })?;
 
-            let file_name = format!("./files/{}.{}", Uuid::new_v4().to_string(), file_ending);
-            tokio::fs::write(&file_name, value).await.map_err(|e| {
-                eprint!("error writing file: {}", e);
-                warp::reject::reject()
-            })?;
-            println!("created file: {}", file_name);
-        }
-    }
+                //file.write_all(&the_vec).unwrap();
+
+            // for val in the_vec {
+            //     file.write_all(&val)?;
+            // }
+                // match file {
+                //     Ok(mut file) => {
+                //         file.write_all("./photos/new.png",&the_vec);
+                //     }
+                //     Err(e) => {
+                //         eprintln!("Error! Could not open file: {}", e);
+                //     }
+                // }
+
+    
+           // part
+    
+            // let parts: Vec<Part> = form.try_collect().await.map_err(|e| {
+            //     eprintln!("form error: {}", e);
+            //     warp::reject::reject()
+            // })?;
+
+
+            //println!("parts: {:#?}", parts);
+            // for p in parts {
+            //     if p.name() == "file" {
+            //         let content_type = p.content_type();
+            //         let file_ending;
+            //         match content_type {
+            //             Some(file_type) => match file_type {
+            //                 "application/pdf" => {
+            //                     file_ending = "pdf";
+            //                 }
+            //                 "image/png" => {
+            //                     file_ending = "png";
+            //                 }
+            //                 v => {
+            //                     eprintln!("invalid file type found: {}", v);
+            //                     return Err(warp::reject::reject());
+            //                 }
+            //             },
+            //             None => {
+            //                 eprintln!("file type could not be determined");
+            //                 return Err(warp::reject::reject());
+            //             }
+            //         }
+
+            //         let value = p
+            //             .stream()
+            //             .try_fold(Vec::new(), |mut vec, data| {
+            //                  vec.put_slice(data.chunk());
+            //                 async move { Ok(vec) }
+            //             })
+            //             .await
+            //             .map_err(|e| {
+            //                 eprintln!("reading file error: {}", e);
+            //                 warp::reject::reject()
+            //             })?;
+
+            //         let file_name = format!("./photos/{}.png", Uuid::new_v4().to_string());
+            //         tokio::fs::write(&file_name, value).await.map_err(|e| {
+            //             eprint!("error writing file: {}", e);
+            //             warp::reject::reject()
+            //         })?;
+            //         println!("created file: {}", file_name);
+            //     }
+            // }
 
     Ok("success")
 }
@@ -267,5 +359,21 @@ mod routes {
             // pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
 
             // }
+
+    pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
+    let (code, message) = if err.is_not_found() {
+        (StatusCode::NOT_FOUND, "Not Found".to_string())
+    } else if err.find::<warp::reject::PayloadTooLarge>().is_some() {
+        (StatusCode::BAD_REQUEST, "Payload too large".to_string())
+    } else {
+        eprintln!("unhandled error: {:?}", err);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Internal Server Error".to_string(),
+        )
+    };
+       Ok(warp::reply::with_status(message, code))
         }
+    
+    }
 }

@@ -22,6 +22,15 @@
     <button onClick="checkInUser()">check-in</button>
     <button onClick="checkOutUser()">check-out</button>
     <button onClick="checkOutUser()">delete</button>
+
+    <form
+      action="/api/upload-photo"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <input type="file" name="photo" />
+      <input type="submit" value="Upload" />
+    </form>
     <script>
       const user_id = document.getElementById("user_id");
 

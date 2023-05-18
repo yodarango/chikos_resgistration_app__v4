@@ -1,4 +1,12 @@
 - I added check in and out ✅
 - Next, implement photo storage ⭕️
-  👉 left off here. Figure out the error being thrown
+  👉 left off in saving images. I was able to save images using two approaches:
+
+  - Tokio
+  - std::fs
+
+  📖 Study each so you know what is happening.
+
+  could also use create `image` look into it at log rocket https://blog.logrocket.com/decoding-encoding-images-rust-using-image-crate/ to resize
+
 - implement deletions ✅

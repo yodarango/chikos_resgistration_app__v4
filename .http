@@ -1,0 +1,3 @@
+POST http://localhost/3030/api/upload-photo
+Content-Type: multipart/form-data
+file: @/home/somewhere/picture.png
