@@ -80,11 +80,10 @@ pub mod server {
         let public_routes = 
          warp::path::end()
         .and(warp::get())
-        .and(warp::fs::dir("src/public/"))
-        ;
+        .and(warp::fs::dir("src/public/"));
 
 
-        let routes = public_routes.or(api_routes).recover(files::handle_rejection);
+        let routes = public_routes.or(api_routes); //.recover(files::handle_rejection);
 
         warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
 
@@ -203,31 +202,27 @@ mod routes {
 
 
         pub mod files {
-            use std::{convert::Infallible, vec, io::Write};
+            use anyhow::Result;
+            use warp::{Reply, Rejection, multipart::FormData, Buf};
+            use image;
+            use std::vec;
             use bytes::BufMut;
             use futures::{TryStreamExt, TryFutureExt};
-            use uuid::Uuid;
-            use warp::{
-                multipart::{FormData, Part},
-                Rejection, Reply, Buf, hyper::StatusCode
-            };
-            use anyhow::Result;
-            use std::fs;
-            
-            pub async fn upload(form: FormData) -> Result<impl Reply, Rejection> {
 
+            pub async fn upload (form: FormData) -> Result<impl Reply, Rejection> {
                  let parts: Result<Vec<(String, Vec<u8>)>, warp::Rejection> = form
                 .and_then(|part| {
                     let name = part.name().to_string();
+                    //let content_type  = part.content_type();
                     
-                    let value = 
+                    let bytes = 
                     part
                     .stream()
                     .try_fold(Vec::new(), |mut vec, data| {
                         vec.put_slice(data.chunk());
                         async move { Ok(vec) }
                     });
-                    value
+                    bytes
                     .map_ok(move |vec| (name, vec))
                 })
                 .try_collect()
@@ -236,144 +231,32 @@ mod routes {
                     panic!("multipart error: {:?}", e);
                  });
 
-                let vec_u8: Option<Vec<u8>> = match parts {
+
+                let bytes_from_parts: Option<Vec<u8>> = match parts {
                     Ok(parts) => parts.first().map(|(_, vec)| vec.clone()),
                     Err(_) => None,
                 };
 
-               let the_vec =  match vec_u8 {
+               let bytes_vec =  match bytes_from_parts {
                     Some(vec) => vec,
                     None => {
                      vec![0]    
                     }
                 };
 
+                //let img = image::open("new.png").expect("dfsd");
+               // let data = image::ImageBuffer::from_raw(200, 200, bytes_vec).expect("Could not create image buffer");
+                let data = std::io::Cursor::new(bytes_vec);
+                let reader = image::io::Reader::new(data).with_guessed_format().expect("Could not read image"); //.decode().expect("Could not decode image");
+                let img = reader.decode().expect("failed here");
+                let thumbnail = img.resize(500, 500, image::imageops::FilterType::Nearest);
 
-                print!( "writting.....");
+                thumbnail.save("thumbnail.png").expect("Could not save thumbnail");
+                //image::imageops::resize(&bytes_vec, 200, 200, image::imageops::FilterType::Nearest);
 
-                let file_name = "new_one.png";
-                //  let mut file = fs::OpenOptions::new()
-                // .read(true)
-                // .write(true)
-                // .create(true);
-               // .append(true);
-                //.open(file_name).unwrap();
+                //println!("bytes_vec: {:?}", bytes_vec);
 
-
-                // //👇 works 
-
-                // // create the file
-                // let mut file = match fs::File::create(&file_name) {
-                //     Ok(file) => file,
-                //     Err(err) => {
-                //         panic!("Failed to create the file: {}", err);
-                //     }
-                // };
-
-                // // Write the image bytes to the file
-                // if let Err(err) = file.write_all(&the_vec) {
-                //     eprintln!("Failed to write the image file: {}", err);
-                // } else {
-                //     println!("Image file successfully written to disk.");
-                // }
-
-                // //👆 works 
-
-
-                tokio::fs::write(&file_name, the_vec).await.map_err(|e| {
-                    eprint!("error writing file: {}", e);
-                    warp::reject::reject()
-                })?;
-
-                //file.write_all(&the_vec).unwrap();
-
-            // for val in the_vec {
-            //     file.write_all(&val)?;
-            // }
-                // match file {
-                //     Ok(mut file) => {
-                //         file.write_all("./photos/new.png",&the_vec);
-                //     }
-                //     Err(e) => {
-                //         eprintln!("Error! Could not open file: {}", e);
-                //     }
-                // }
-
-    
-           // part
-    
-            // let parts: Vec<Part> = form.try_collect().await.map_err(|e| {
-            //     eprintln!("form error: {}", e);
-            //     warp::reject::reject()
-            // })?;
-
-
-            //println!("parts: {:#?}", parts);
-            // for p in parts {
-            //     if p.name() == "file" {
-            //         let content_type = p.content_type();
-            //         let file_ending;
-            //         match content_type {
-            //             Some(file_type) => match file_type {
-            //                 "application/pdf" => {
-            //                     file_ending = "pdf";
-            //                 }
-            //                 "image/png" => {
-            //                     file_ending = "png";
-            //                 }
-            //                 v => {
-            //                     eprintln!("invalid file type found: {}", v);
-            //                     return Err(warp::reject::reject());
-            //                 }
-            //             },
-            //             None => {
-            //                 eprintln!("file type could not be determined");
-            //                 return Err(warp::reject::reject());
-            //             }
-            //         }
-
-            //         let value = p
-            //             .stream()
-            //             .try_fold(Vec::new(), |mut vec, data| {
-            //                  vec.put_slice(data.chunk());
-            //                 async move { Ok(vec) }
-            //             })
-            //             .await
-            //             .map_err(|e| {
-            //                 eprintln!("reading file error: {}", e);
-            //                 warp::reject::reject()
-            //             })?;
-
-            //         let file_name = format!("./photos/{}.png", Uuid::new_v4().to_string());
-            //         tokio::fs::write(&file_name, value).await.map_err(|e| {
-            //             eprint!("error writing file: {}", e);
-            //             warp::reject::reject()
-            //         })?;
-            //         println!("created file: {}", file_name);
-            //     }
-            // }
-
-    Ok("success")
-}
-
-            // pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
-
-            // }
-
-    pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
-    let (code, message) = if err.is_not_found() {
-        (StatusCode::NOT_FOUND, "Not Found".to_string())
-    } else if err.find::<warp::reject::PayloadTooLarge>().is_some() {
-        (StatusCode::BAD_REQUEST, "Payload too large".to_string())
-    } else {
-        eprintln!("unhandled error: {:?}", err);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal Server Error".to_string(),
-        )
-    };
-       Ok(warp::reply::with_status(message, code))
+                Ok("hey")
+            }
         }
-    
-    }
 }

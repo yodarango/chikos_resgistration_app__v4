@@ -1,12 +1,8 @@
 - I added check in and out ✅
-- Next, implement photo storage ⭕️
-  👉 left off in saving images. I was able to save images using two approaches:
+- Next, implement photo storage ✅
+  I was able to upload and compress images using `image`, `bytes`, and `futures`.
+  📖 Now study each so you know what is happening so I can understand.
 
-  - Tokio
-  - std::fs
-
-  📖 Study each so you know what is happening.
-
-  could also use create `image` look into it at log rocket https://blog.logrocket.com/decoding-encoding-images-rust-using-image-crate/ to resize
+  also break down into helpers the image stuff that should not be in the warp filter
 
 - implement deletions ✅
