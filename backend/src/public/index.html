@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form onsubmit="submitForm(event)">
+      <input name="first_name" type="text" id="fn" />
+      <input type="text" name="last_name" id="ln" />
+      <input type="number" name="age" id="age" />
+      <input type="number" name="gender" id="gen" />
+      <input type="text" name="first_name" id="gfn" />
+      <input type="text" name="age" id="gln" />
+      <input type="number" name="phone_number" id="gphone" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <input type="number" name="user_id" id="user_id" />
+    <button onClick="checkInUser()">check-in</button>
+    <button onClick="checkOutUser()">check-out</button>
+    <button onClick="checkOutUser()">delete</button>
+
+    <form
+      action="/api/upload-photo"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <input type="file" name="photo" />
+      <input type="submit" value="Upload" />
+    </form>
+    <script>
+      const user_id = document.getElementById("user_id");
+
+      const submitForm = async (event) => {
+        event.preventDefault(); // Prevent form submission
+
+        // Get form field values
+        const first_name = document.getElementById("fn").value;
+        const last_name = document.getElementById("ln").value;
+        const age = document.getElementById("age").value;
+        const gender = document.getElementById("gen").value;
+        const guardian_fn = document.getElementById("gfn").value;
+        const guardian_ln = document.getElementById("gln").value;
+        const phone_number = document.getElementById("gphone").value;
+
+        // Create JSON body
+        const body = JSON.stringify({
+          first_name,
+          last_name,
+          age: parseInt(age),
+          gender: parseInt(gender),
+          guardian: {
+            first_name: guardian_fn,
+            last_name: guardian_ln,
+            phone_number: parseInt(phone_number),
+          },
+        });
+
+        // Send POST request using fetch
+        const req = await fetch("api/users/new", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: body,
+        });
+        const res = await req.json();
+        console.log(res);
+      };
+    </script>
+
+    <script>
+      const checkInUser = async () => {
+        console.log(user_id);
+        const req = await fetch(`api/users/checkin/${user_id.value}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
+
+      const checkOutUser = async () => {
+        const req = await fetch(`api/users/checkout/${user_id.value}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
+    </script>
+
+    <script>
+      const deleteUser = async () => {
+        const req = await fetch(`api/users/checkin/${user_id.value}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const res = await req.json();
+        console.log(res);
+      };
+    </script>
+  </body>
+</html>
