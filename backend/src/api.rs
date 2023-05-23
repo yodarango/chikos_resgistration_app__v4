@@ -131,7 +131,7 @@ mod routes {
 
         // post routes
         pub mod post {
-            use crate::models::Registrant;
+            use common::models::Registrant;
             use crate::db::queries::post;
             use warp::{Reply, Rejection};
             use mysql_async::{Pool};

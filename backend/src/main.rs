@@ -1,6 +1,5 @@
 
 use api::server;
-mod models;
 mod api;
 mod db;
 

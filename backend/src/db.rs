@@ -16,7 +16,7 @@ pub fn with_db(pool: Pool) -> impl Filter<Extract = (Pool,), Error = Infallible>
 pub mod queries {
     pub mod get {
         use mysql_async::{prelude::*, Pool, Error};
-        use crate::models::{Guardian,Registrant};
+        use common::models::{Guardian,Registrant};
 
         pub async fn get_all_users(from_id: String, pool: Pool) -> Result<Vec<Registrant>, Error> {
         
@@ -131,7 +131,7 @@ pub mod queries {
 
     pub mod post {
         use mysql_async::{prelude::*, Pool, Error};
-        use crate::models::{Response, Registrant};
+        use common::models::{Response, Registrant};
         use warp::{reply::json, Reply};
         use super::get::get_last_user_id;
        // use serde_json::json;
@@ -184,7 +184,7 @@ pub mod queries {
     pub mod put {
         use mysql_async::{prelude::*, Pool, Error};
         use warp::{reply::json, Reply};
-        use crate::models::{Response};
+        use common::models::{Response};
 
         pub async fn check_in_user (user_id: u64, pool: Pool) -> Result<impl Reply, Error> {
             let mut conn = pool.get_conn().await?;
@@ -223,7 +223,7 @@ pub mod queries {
         use mysql_async::{Pool, Error, prelude::*};
         use warp::{Reply, reply::json};
 
-        use crate::models::Response;
+        use common::models::Response;
 
         pub async fn delete_user (user_id: u64, pool: Pool) -> Result<impl Reply, Error> {
             let mut conn = pool.get_conn().await?;
