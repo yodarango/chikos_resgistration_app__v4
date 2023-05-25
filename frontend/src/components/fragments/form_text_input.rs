@@ -1,4 +1,4 @@
-use crate::components::common::{Input};
+use crate::components::common::input::Input;
 use yew::prelude::*;
 
 #[derive(Clone, PartialEq)]
@@ -13,7 +13,7 @@ fn default_align() -> Alignment {
 
 
 #[derive(PartialEq, Properties)]
-pub struct FormInputProps {
+pub struct FormTextInputProps {
     #[prop_or_else(default_align)]
     pub align: Alignment,
     #[prop_or_default]
@@ -28,9 +28,9 @@ pub struct FormInputProps {
 
 
 #[function_component]
-pub fn FormInput (props: &FormInputProps)-> Html {
+pub fn FormTextInput (props: &FormTextInputProps)-> Html {
 
-    let FormInputProps { 
+    let FormTextInputProps { 
         placeholder, 
         class_name, 
         value, 
