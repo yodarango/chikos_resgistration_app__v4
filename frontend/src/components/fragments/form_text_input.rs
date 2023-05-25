@@ -37,8 +37,12 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
         label, 
         align } = props;   
 
+    let alignment_class = match align {
+        Alignment::Vertical => String::from("layout-vertical"),
+        Alignment::Horizontal => String::from("layout-horizontal"),
+    };
     html!{
-        <div class={classes!(class_name.clone())}>
+        <div class={classes!(alignment_class, class_name.clone())}>
             <p>{label.clone()}</p>
             <Input input_type="text" placeholder={placeholder} value={value} />
         </div>
