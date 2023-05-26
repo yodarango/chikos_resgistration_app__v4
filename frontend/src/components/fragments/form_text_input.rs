@@ -1,4 +1,7 @@
-use crate::components::common::input::Input;
+use crate::components::common::{
+    input::Input, 
+    icon::{Icon, IconName}
+};  
 use yew::prelude::*;
 
 #[derive(Clone, PartialEq)]
@@ -41,10 +44,12 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
         Alignment::Vertical => String::from("layout-vertical"),
         Alignment::Horizontal => String::from("layout-horizontal"),
     };
+    
     html!{
         <div class={classes!(alignment_class, class_name.clone())}>
-            <p>{label.clone()}</p>
+            <p class="form_text_input_label">{label.clone()}</p>
             <Input input_type="text" placeholder={placeholder} value={value} />
+            <Icon name={IconName::Edit} color="#F2F2F2" />
         </div>
     }
 }
