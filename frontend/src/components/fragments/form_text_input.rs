@@ -1,6 +1,7 @@
 use crate::components::common::{
     input::Input, 
-    icon::{Icon, IconName}
+    icon::{Icon, IconName},
+    paragraph::Paragraph    
 };  
 use yew::prelude::*;
 
@@ -47,7 +48,7 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
     
     html!{
         <div class={classes!(alignment_class, class_name.clone())}>
-            <p class="form_text_input_label">{label.clone()}</p>
+            <Paragraph class_name={Classes::from("form_text_input_label")} text={label.clone()} />
             <Input input_type="text" placeholder={placeholder} value={value} />
             <Icon name={IconName::Edit} color="#F2F2F2" />
         </div>

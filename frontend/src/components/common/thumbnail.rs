@@ -29,7 +29,7 @@ pub fn Thumbnail(props: &ThumbnailProps) -> Html{
 
     html!{
         <div class={classes!(class_name.clone())} style={size_styles}>
-            <img src={src.clone()} alt={alt}/>
+            <img src={src.clone()} alt={alt.clone()}/>
         </div>
     }
 }

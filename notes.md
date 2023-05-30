@@ -1,2 +1,3 @@
-✅ Separated component into their own files.
-👉 Implement icons component
+✅ Added Paragraph comp
+✅ Add `onchange` evt to <Input />
+✅ create <Button />
