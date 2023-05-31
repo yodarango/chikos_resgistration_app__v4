@@ -532,10 +532,12 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "common",
+ "gloo-console",
  "gloo-net",
  "serde",
  "trunk",
  "wasm-bindgen-futures",
+ "web-sys",
  "yew",
 ]
 

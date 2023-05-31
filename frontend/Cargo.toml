@@ -10,3 +10,5 @@ gloo-net = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 wasm-bindgen-futures = "0.4"
 common = {path= "../common"}
+web-sys ={version="0.3.63", features=["HtmlInputElement"]}
+gloo-console = "0.2.3"

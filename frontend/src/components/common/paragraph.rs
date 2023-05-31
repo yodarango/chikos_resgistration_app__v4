@@ -3,7 +3,7 @@ use yew::prelude::*;
 
 #[derive(PartialEq, Properties)]
 pub struct ParagraphProps {
-    pub text: String,
+    pub children: Children,
     #[prop_or_default]
     pub class_name: Option<Classes>,
     #[prop_or_else(default_size)]
@@ -24,13 +24,13 @@ fn default_align()-> Alignment{
 
 #[function_component]
 pub fn Paragraph (props: &ParagraphProps)-> Html{
-    let ParagraphProps {text, class_name, size, color, alignment} = props;
+    let ParagraphProps {children, class_name, size, color, alignment} = props;
     let color = format!("color: {};", color);
     let size = format!("font-size: {}px;", size);
 
     html!{
         <div>
-            <p class={classes!(class_name.clone(), alignment.get_class())} style={color + &size}>{text.clone()}</p>
+            <p class={classes!(class_name.clone(), alignment.get_class())} style={color + &size}>{for children.iter()}</p>
         </div>
     }   
 }
