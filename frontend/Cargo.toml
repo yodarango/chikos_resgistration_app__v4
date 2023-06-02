@@ -12,3 +12,4 @@ wasm-bindgen-futures = "0.4"
 common = {path= "../common"}
 web-sys ={version="0.3.63", features=["HtmlInputElement"]}
 gloo-console = "0.2.3"
+gloo = "0.8.0"
