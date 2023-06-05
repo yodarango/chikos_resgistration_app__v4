@@ -1,3 +1,4 @@
+use crate::components::common::icon::Icon;
 use yew::prelude::*;
 
 #[derive(PartialEq, Properties)]
@@ -15,7 +16,7 @@ pub struct ButtonProps {
 
 #[function_component]
 pub fn Button (props : &ButtonProps)-> Html{
-    let ButtonProps {children, class_name, bg_color, color, onclick} = props;
+    let ButtonProps {children, class_name, bg_color, color, onclick, } = props;
 
     let bg_color = format!("background-color: {};", bg_color);
     let text_color = format!("color: {};", color);
