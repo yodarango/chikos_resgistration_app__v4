@@ -29,8 +29,6 @@ pub fn Paragraph (props: &ParagraphProps)-> Html{
     let size = format!("font-size: {}px;", size);
 
     html!{
-        <div>
-            <p class={classes!(class_name.clone(), alignment.get_class())} style={color + &size}>{for children.iter()}</p>
-        </div>
+            <p class={classes!("chikios-paragraph", class_name.clone(), alignment.get_class())} style={color + &size}>{for children.iter()}</p>
     }   
 }

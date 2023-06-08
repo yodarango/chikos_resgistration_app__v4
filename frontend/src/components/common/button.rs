@@ -1,6 +1,10 @@
 use crate::components::common::icon::Icon;
 use yew::prelude::*;
 
+fn default_style () -> String {
+    String::from("")
+}
+
 #[derive(PartialEq, Properties)]
 pub struct ButtonProps {
     #[prop_or_default]
@@ -8,26 +12,22 @@ pub struct ButtonProps {
     pub children: Children,
     #[prop_or_default]
     pub class_name: Option<Classes>,
-    #[prop_or_default]
-    pub color: String,
-    #[prop_or_default]
-    pub bg_color: String,
+    #[prop_or_else(default_style)]
+    style: String,
+
 }
 
 #[function_component]
 pub fn Button (props : &ButtonProps)-> Html{
-    let ButtonProps {children, class_name, bg_color, color, onclick, } = props;
-
-    let bg_color = format!("background-color: {};", bg_color);
-    let text_color = format!("color: {};", color);
+    let ButtonProps {children, class_name, style, onclick, } = props;
 
     let onclick = onclick.clone();
 
 
 
     html!{
-        <button class={classes!("btn","primary", class_name)} style={bg_color} {onclick}>
-            <span style={text_color}>{for children.iter()}</span>
+        <button class={classes!("btn","btn-primary", class_name)} style={style.clone()} {onclick}>
+            <span>{for children.iter()}</span>
         </button>
     }
 }

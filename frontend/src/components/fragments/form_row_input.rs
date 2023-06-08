@@ -69,21 +69,21 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
          .. } = props;   
 
     let alignment_class = match align {
-        Alignment::Vertical => String::from("layout-vertical"),
-        Alignment::Horizontal => String::from("layout-horizontal"),
+        Alignment::Vertical => String::from("flex-wrap"),
+        Alignment::Horizontal => String::from("flex-nowrap"),
     };
     
     html!{
-        <div class={classes!(alignment_class, class_name.clone())}>
-            <Paragraph class_name={Classes::from("form_text_input_label")} >{label}</Paragraph>
+        <div class={classes!("d-flex", "align-items-center", alignment_class, class_name.clone())}>
+            <Paragraph class_name={Classes::from("me-3")} >{format!("{}:",label)}</Paragraph>
             {match input_type {
-                InputType::Text => html!{<Input input_type="text" placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change.clone()} />},
+                InputType::Text => html!{<Input input_type="text" placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change.clone()}  />},
                 InputType::Number => html!{<InputNumber placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change_number.clone()} />},
             }}
                 
             
             
-            <button onclick={on_edit}>
+            <button onclick={on_edit} class={classes!("d-block", "ms-3")}>
                 if !*is_editing{
                 <Icon name={IconName::Edit} color="#F2F2F2" />
                 } else {
