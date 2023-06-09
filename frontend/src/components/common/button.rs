@@ -26,7 +26,7 @@ pub fn Button (props : &ButtonProps)-> Html{
 
 
     html!{
-        <button class={classes!("btn","btn-primary", class_name)} style={style.clone()} {onclick}>
+        <button class={classes!("btn", class_name)} style={style.clone()} {onclick}>
             <span>{for children.iter()}</span>
         </button>
     }

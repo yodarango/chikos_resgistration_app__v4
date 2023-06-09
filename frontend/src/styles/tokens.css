@@ -6,27 +6,40 @@
   --dr-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
   --dr-body-font-family: var(--dr-font-sans-serif);
-  --dr-body-font-size: 1rem;
+  --dr-body-font-size: 1.6rem;
   --dr-body-font-weight: 400;
   --dr-body-line-height: 1.5;
 
   /* RADIUSES */
-  --dr-border-radius: 0.375rem;
-  --dr-border-radius-sm: 0.25rem;
-  --dr-border-radius-lg: 0.5rem;
-  --dr-border-radius-xl: 1rem;
-  --dr-border-radius-xxl: 2rem;
+  --dr-border-radius-sm: 0.5rem;
+  --dr-border-radius: 0.75rem;
+  --dr-border-radius-lg: 1.25rem;
+  --dr-border-radius-xl: 2rem;
+  --dr-border-radius-xxl: 3rem;
+
+  /* BORDERS */
+  --dr-border-width: 1px;
+  --dr-border-style: solid;
+  --dr-border-color: #ffffff;
+
+  /* BUTTONS */
+  --dr-btn-padding-y: 1rem;
+  --dr-btn-padding-x: 1.6rem;
+  --dr-btn-font-family: var(--dr-font-sans-serif);
+  --dr-btn-font-size: 1.6rem;
+  --dr-btn-font-weight: 400;
 }
 
 :root,
 [data-bs-theme="light"] {
   /* APP COLORS  */
+  --dr-font-color: #ffffff; /* app lettering */
   --dr-primary: #131124; /* app background */
   --dr-secondary: #272348; /* app foreground contrast */
-  --dr-ternary: #ffffff; /* app lettering */
+  --dr-tertiary: #ffffff; /* app foreground on foreground */
   --dr-quaternary: #00d1ff; /* app accent */
-  /* --dr-quinary: #f8f9fa;
-  --dr-senary: #e9ecef;
+  --dr-quinary: #175515;
+  /* --dr-senary: #e9ecef;
   --dr-septenary: #dee2e6;
   --dr-octonary: #ced4da;
   --dr-nonary: #adb5bd;
@@ -58,13 +71,13 @@
   --dr-gray-900: #212529;
 
   /* STATEFUL COLORS */
-  --dr-success: #198754;
+  --dr-success: #6af548;
   --dr-success-subtle: #d1e7dd;
   --dr-info: #0dcaf0;
   --dr-info-subtle: #cff4fc;
   --dr-warning: #ffc107;
   --dr-warning-subtle: #fff3cd;
-  --dr-danger: #dc3545;
+  --dr-danger: #f54848;
   --dr-danger-subtle: #f8d7da;
 
   /* SHADOWS */

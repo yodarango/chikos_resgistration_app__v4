@@ -3,5 +3,6 @@ pub mod paragraph;
 pub mod thumbnail;
 pub mod button;
 pub mod radio;
+pub mod card;
 pub mod input;
 pub mod icon;
