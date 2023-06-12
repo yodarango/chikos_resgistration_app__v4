@@ -7,6 +7,7 @@ use components::fragments::form_row_input::{InputType, FormTextInput};
 use components::common::button::Button;
 use components::common::radio::Radio;
 use components::fragments::registrant_card::RegistrantCard;
+use components::layouts::register_form::RegisterForm;
 
 
 #[function_component(App)]
@@ -40,6 +41,7 @@ fn app() -> Html {
                 last_name={"Doe".to_string()}
                 age={11}
             />
+            <RegisterForm/>
         </div>
     }
 }

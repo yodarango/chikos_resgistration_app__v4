@@ -43,7 +43,7 @@ let onchange= Callback::from(move |event: Event|{
             if !*is_editing {
                 <Paragraph class_name={Classes::from("form_text_input_number")} >{value.clone()}</Paragraph>
             }else {
-                <input type="number" placeholder={placeholder} value={value} {onchange}/>
+                <input type="number" placeholder={placeholder} value={value} {onchange} class={classes!("w-100")}/>
             }
         </div>
     }

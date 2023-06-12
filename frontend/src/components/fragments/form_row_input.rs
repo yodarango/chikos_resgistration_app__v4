@@ -44,13 +44,16 @@ pub struct FormTextInputProps {
     pub handle_change: Callback<String>,
     #[prop_or_default]
     pub handle_change_number: Callback<u8>,
-
+    #[prop_or(false)]
+    pub can_edit: bool,
+    #[prop_or(false)]
+    pub is_editing: bool,
 }
 
 
 #[function_component]
 pub fn FormTextInput (props: &FormTextInputProps)-> Html {
-    let is_editing = use_state(|| false);
+    let is_editing = use_state(|| props.is_editing.clone());
 
     let on_edit = {
         let is_editing = is_editing.clone();
@@ -74,22 +77,23 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
     };
     
     html!{
-        <div class={classes!("d-flex", "align-items-center", alignment_class, class_name.clone())}>
-            <Paragraph class_name={Classes::from("me-3")} >{format!("{}:",label)}</Paragraph>
+        <div class={classes!("d-flex", "align-items-center", "flex-nowrap", alignment_class, class_name.clone())}>
+            <Paragraph class_name={Classes::from("me-3 flex-shrink-0")} >{format!("{}:",label)}</Paragraph>
             {match input_type {
-                InputType::Text => html!{<Input input_type="text" placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change.clone()}  />},
-                InputType::Number => html!{<InputNumber placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change_number.clone()} />},
+                InputType::Text => html!{<Input input_type="text" placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change.clone()} class_name={Classes::from("w-100")} />},
+                InputType::Number => html!{<InputNumber placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change_number.clone()} class_name={Classes::from("w-100")}/>},
             }}
                 
-            
-            
-            <button onclick={on_edit} class={classes!("d-block", "ms-3")}>
-                if !*is_editing{
-                <Icon name={IconName::Edit} color="#F2F2F2" />
-                } else {
-                <Icon name={IconName::Check} color="#F2F2F2" />
+            if props.can_edit { 
+                    <button onclick={on_edit} class={classes!("d-block", "ms-3")}>
+                    if !*is_editing{
+                    <Icon name={IconName::Edit} color="#F2F2F2" />
+                    } else {
+                    <Icon name={IconName::Check} color="#F2F2F2" />
+                    }
+                    </button>
                 }
-            </button>
+            
         </div>
     }
 }

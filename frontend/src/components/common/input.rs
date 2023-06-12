@@ -24,30 +24,30 @@ pub struct InputProps {
 #[function_component]
 pub fn Input(props: &InputProps) -> Html{
 
-    let InputProps {
-        placeholder, 
-        class_name, 
-        input_type,
-        value, 
-        is_editing,
-        ..
-    } = props;
+        let InputProps {
+            placeholder, 
+            class_name, 
+            input_type,
+            value, 
+            is_editing,
+            ..
+        } = props;
 
-let handle_change = props.handle_change.clone();
+        let handle_change = props.handle_change.clone();
 
-let onchange= Callback::from(move |event: Event|{
-    let input = event.target_dyn_into::<HtmlInputElement>(); 
-    if let Some(input) = input {
-        handle_change.emit(input.value());
-    }
-});
+        let onchange= Callback::from(move |event: Event|{
+            let input = event.target_dyn_into::<HtmlInputElement>(); 
+            if let Some(input) = input {
+                handle_change.emit(input.value());
+            }
+        });
 
     html!{
-        <div class={classes!("form_input_number", class_name.clone())}>
+        <div class={classes!("form_input", class_name.clone())}>
             if !*is_editing {
                 <Paragraph class_name={Classes::from("form_text_input")} >{value.clone()}</Paragraph>
             }else {
-                <input type={input_type} placeholder={placeholder} value={value} {onchange}/>
+                <input type={input_type} placeholder={placeholder} value={value} {onchange} class={classes!("w-100")}/>
             }
         </div>
     }
