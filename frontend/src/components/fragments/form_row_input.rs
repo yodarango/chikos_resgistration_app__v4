@@ -48,6 +48,8 @@ pub struct FormTextInputProps {
     pub can_edit: bool,
     #[prop_or(false)]
     pub is_editing: bool,
+     #[prop_or_default]
+    pub label_style: AttrValue,
 }
 
 
@@ -69,6 +71,7 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
         label, 
         align,
         input_type,
+        label_style,
          .. } = props;   
 
     let alignment_class = match align {
@@ -78,7 +81,9 @@ pub fn FormTextInput (props: &FormTextInputProps)-> Html {
     
     html!{
         <div class={classes!("d-flex", "align-items-center", "flex-nowrap", alignment_class, class_name.clone())}>
-            <Paragraph class_name={Classes::from("me-3 flex-shrink-0")} >{format!("{}:",label)}</Paragraph>
+            <div style={label_style.clone()}>
+                <Paragraph class_name={Classes::from("me-3 flex-shrink-0")} >{format!("{}:",label)}</Paragraph>
+            </div>
             {match input_type {
                 InputType::Text => html!{<Input input_type="text" placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change.clone()} class_name={Classes::from("w-100")} />},
                 InputType::Number => html!{<InputNumber placeholder={placeholder} value={value} is_editing={*is_editing} handle_change={props.handle_change_number.clone()} class_name={Classes::from("w-100")}/>},

@@ -12,6 +12,8 @@ pub struct ParagraphProps {
     pub color: String,
     #[prop_or_else(default_align)]
     pub alignment: Alignment,
+    #[prop_or_default]
+    pub style: AttrValue
 }
 
 fn default_size () ->u16 {
@@ -24,11 +26,11 @@ fn default_align()-> Alignment{
 
 #[function_component]
 pub fn Paragraph (props: &ParagraphProps)-> Html{
-    let ParagraphProps {children, class_name, size, color, alignment} = props;
+    let ParagraphProps {children, class_name, size, color, alignment, style} = props;
     let color = format!("color: {};", color);
     let size = format!("font-size: {}px;", size);
 
     html!{
-            <p class={classes!("chikios-paragraph", class_name.clone(), alignment.get_class())} style={color + &size}>{for children.iter()}</p>
+            <p class={classes!("chikios-paragraph", class_name.clone(), alignment.get_class())} style={color + &size + &style.clone().to_string()}>{for children.iter()}</p>
     }   
 }

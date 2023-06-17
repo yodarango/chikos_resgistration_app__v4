@@ -43,11 +43,11 @@ pub fn Input(props: &InputProps) -> Html{
         });
 
     html!{
-        <div class={classes!("form_input", class_name.clone())}>
+        <div class={classes!(class_name.clone())}>
             if !*is_editing {
                 <Paragraph class_name={Classes::from("form_text_input")} >{value.clone()}</Paragraph>
             }else {
-                <input type={input_type} placeholder={placeholder} value={value} {onchange} class={classes!("w-100")}/>
+                <input type={input_type} placeholder={placeholder} value={value} {onchange} class={classes!("form_input", "p-3", "bg-secondary", "rounded-3", "w-100")}/>
             }
         </div>
     }
